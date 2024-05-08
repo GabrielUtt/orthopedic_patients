@@ -17,11 +17,11 @@ header-includes:
 
 The purpose of this project is to apply machine learning techniques acquired in HardvardX's [*Data Science Professional Certificate*](https://www.edx.org/certificates/professional-certificate/harvardx-data-science) program to a data set of one's own choice. 
 
-A set of machine learning algorithms are applied to a data set about the biomechanical features of orthopedic patients. The data set can be found on [Kaggle](https://www.kaggle.com/datasets/uciml/biomechanical-features-of-orthopedic-patients), but was originally downloaded from a [UCI ML repository](https://archive.ics.uci.edu/ml).
+Here, set of machine learning algorithms is applied to a data set about the biomechanical features of orthopedic patients. The data set can be found on [Kaggle](https://www.kaggle.com/datasets/uciml/biomechanical-features-of-orthopedic-patients), but was originally downloaded from a [UCI ML repository](https://archive.ics.uci.edu/ml).
 
 ## Manual
 
-The code needed to run the calculations is read from the file *orthopedic_patients.R*, which needs to be placed in the same folder as this markdown file for the code to be imported, using the following chunk:
+The code needed to run the calculations is  read from the files *orthopedic_patients.R* and *help_functions_and_data.R*, which need to be placed in the same folder as this markdown file for the code to be imported, using the following chunk:
 
 ```{r setup, echo = TRUE, results = 'hide', warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -29,12 +29,12 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 knitr::read_chunk(path = file.path(getwd(), "orthopedic_patients_MM.R"))
 
 library(knitr)
-knitr::knit_hooks$set(plot = function(x, options)  {
+knitr::knit_hooks$set(plot = function(x, options) {
   paste0(knitr::hook_plot_tex(x, options), "\n\\FloatBarrier\n")
 })
 ```
 
-The markdown file itself does not contain code to run the calculations, but only code to run chunks from the R-script, and code to produce plots and tables. The data files *column_2C_weka.csv* and *column_3C_weka.csv* need to be placed in a a subfolder of the working directory named *data*. The user therefore have to log in to Kaggle and download these files. Since an automatic download is not possible without user data, the script *orthopedic_patients_MM.R* also creates the data by itself if the user does not download the data.
+The markdown file itself does not contain code to run the calculations, but only code to run chunks from the R-script, and code to produce plots and tables. If the data files *column_2C_weka.csv* and *column_3C_weka.csv* are available, they need to be placed in a a subdirectory of the working directory named *data*. To get the data in .csv format, the user has to log in to Kaggle and download these files. Since an automatic download is not possible without user login data, the script *help_functions_and_data.R* also creates the data by itself if the user does not download the data.
 
 In order to prevent the plots from floating freely through the document, which happens when knitting to pdf, I used a separate file (*my_header.tex*) with LateX instruction in the working folder and a corresponding reference in the YAML header. The commands to be written into the .tex file can be found with this [__link__](https://community.rstudio.com/t/cant-control-position-of-tables-and-figures-in-knitted-pdf-document/37364/3).
 
@@ -42,14 +42,14 @@ In order to prevent the plots from floating freely through the document, which h
 
 Two almost identical data sets are provided. In the first data set, provided via the file *column_2C_weka.csv*, the outcome is a binary variable, distinguishing between patients with ("Abnormal") and without ("Normal") an orthopedic issue.
 
-In the second data set, provided via the file *column_3C_weka.csv*, the outcome is a categorical variable that classifies patients as "Normal", and distinguishes between (disk) "Hernia" and "Spondylolisthesis" for patients that are classified as "Abnormal" in the first data set. A hernia (see ref[3]) is the abnormal exit of tissue or an organ. In our case, we are talking about a (spinal) disk herniation (see ref[4]), which is characterized by an injury to the cushioning and connective tissue between vertebrae, allowing the soft, central portion of the disk to bulge out beyond the damaged outer ring. Spondylolisthesis is the displacement of one spinal vertebra compared to another (see ref[5]).
+In the second data set, provided via the file *column_3C_weka.csv*, the outcome is a categorical variable that classifies patients as "Normal", and distinguishes between (disk) "Hernia" and "Spondylolisthesis" for patients that are classified as "Abnormal" in the first data set. A __*hernia*__ (see ref[3]) is the abnormal exit of tissue or an organ. In our case, we are talking about a (spinal) disk herniation (see ref[4]), which is characterized by an injury to the cushioning and connective tissue between vertebrae, allowing the soft, central portion of the disk to bulge out beyond the damaged outer ring. __*Spondylolisthesis*__ is the displacement of one spinal vertebra compared to another (see ref[5]).
 
-We will start with the first data set.
+We will start our analysis using the first data set (with the binary outcome).
 
 The data set contains the following variables. Since the long names cause problems in plots, some of the names will be shortened.
 
 * __Patient ID__ (`pat_Id`, integer): Unique ID for each observation
-* __Class__ (`class`, binary): Outcome; classification of each patient as "Normal" or "Abnormal". Might also be in numeric form, where 1 represents a positive outcome ("Abnormal"), and 0 a negative one ("Aormal"). In the second data set, the variable `class` can take the values "Normal", "Hernia" or "Spondylolisthesis".
+* __Class__ (`class`, binary): Outcome; classification of each patient as "Normal" or "Abnormal". Might also be in numeric form, where 1 represents a positive outcome ("Abnormal"), and 0 a negative one ("Normal"). In the second data set, the variable `class` can take the values "Normal", "Hernia" or "Spondylolisthesis".
 * __Pelvic tilt__ (PT) (`pelvic_tilt`, continuous): The pelvic tilt is a position-dependent parameter defined as the angle created by a line running from the sacral endplate midpoint to the center of the bifemoral heads and the vertical axis. Anterior pelvic tilt has a larger angle than posterior pelvic tilt (see ref[6]).
 * __Sacral Slope__ (SS) (`sacral_slope`, continuous): The sacral slope (SS) is defined as the angle between the horizontal and the sacral plate (see ref[7]).
 * __Pelvic Incidence__ (PI) (`pelvic_incidence`, continuous, shortened to `pelvic_inc`): Pelvic incidence (PI) is an angle between a line perpendicular to the sacral end plate at its midpoint and a line from the center of the femoral head to the sacral end plate midpoint. This is a fixed anatomic parameter, unlike pelvic tilt (PT) and sacral slope (SS), which may change to maintain global alignment. Pelvic incidence (PI) is the sum of pelvic tilt (PT) and sacral slope (SS) (see ref[7]).
@@ -63,10 +63,7 @@ The data set contains the following variables. Since the long names cause proble
 ```{r load_libraries, echo = FALSE}
 ```
 
-```{r help_functions, echo = FALSE}
-```
-
-```{r prepare_data, echo = FALSE}
+```{r get_data_and_help_functions, echo = FALSE}
 ```
 
 ## Data Analysis (binary outcome)
@@ -76,23 +73,28 @@ We are first looking at how the values of each explanatory variable differ from 
 ```{r fig1, fig.width= 5.0, fig.height = 3.0, fig.cap = "Explanatory Variables vs. Patient Status"}
 train2_set_long %>% ggplot(aes(x = class, y = value)) +
   geom_boxplot() +
-  geom_point(data = train2_set_long %>% filter(pat_Id == 116),
-             aes(color = "red"), show.legend = FALSE) +
+  geom_point(
+    data = train2_set_long %>% filter(pat_Id == 116),
+    aes(color = "red"), show.legend = FALSE
+  ) +
   facet_wrap(~name)
 ```
 
 There is one patient with an extreme outlier value regarding the `degree_spondylolisthesis` variable. The red dot shows this patient's values for all variables. Lacking the medical knowledge to determine whether this outlier might be a data error, we will not change the data set. `Figure 2` shows the plot with a reduced scale for better visibility of the results.
 
 ```{r fig2, fig.width= 5.0, fig.height = 3.0, fig.cap = "Explanatory Variables vs. Patient Status (shortened y-axis)"}
-
 train2_set_long %>%
   ggplot(aes(x = class, y = value)) +
   geom_boxplot() +
+  geom_point(
+    data = train2_set_long %>% filter(pat_Id == 116),
+    aes(color = "red"), show.legend = FALSE
+  ) +
   coord_cartesian(ylim = c(-20.0, 160)) +
-  facet_wrap(~ name) 
+  facet_wrap(~name)
 ```
 
-One can see that there is a significant difference for each explanatory variable between "normal" and "abnormal" patients. The median is higher for abnormal patients for all explanatory variables except for pelvic radius, where it is lower. The most significant difference is observed for the variable `degree_spondylolisthesis`, which confirms that this variable is by definition a direct indicator of spondylolisthesis. The second observation is that the variance of each variables is significantly higher for abnormal patients. This means that large values seem to generally increase the probability for the status "abnormal", also when not following the general trend of the specific variable for abnormal patients.
+One can see that there is a significant difference for each explanatory variable between "normal" and "abnormal" patients. The median is higher for abnormal patients for all explanatory variables except for pelvic radius, where it is lower. The most significant difference is observed for the variable `degree_spondylolisthesis`, which confirms that this variable is by definition a direct indicator of spondylolisthesis. The second observation is that the variance of each variables is significantly higher for abnormal patients. This indicates that large values might generally increase the probability for the status "abnormal", also when not following the general trend of the specific variable for abnormal patients.
 
 We will now try various (machine learning) models to predict the state of the patient using the available predictors. Before we do that, we will describe the evaluation metrics we use to assess the performance of the models applied.
 
@@ -104,14 +106,14 @@ __*Overall accuracy*__ is defined as the overall proportion that is predicted co
 
 __*Sensitivity*__ is defined as the ability of a model to correctly predict a positive outcome. It is typically quantified as the proportion of actual positives that are called positives. This quantity is referred to as the *true positive rate (TPR)* or *recall*.
 
-__*Specificity*__ is measured as the proportion of true negatives that are correctly identified by the model, or, in other words, the ability of the model not to predict a positive outcome when the outcome is not positive. Specificity can be quantified in two ways:
+__*Specificity*__ is measured as the proportion of true negatives that are correctly identified by the model, or, in other words, the ability of the model not to predict a positive outcome when the outcome is negative. Specificity can be quantified in two ways:
 
 * as the proportion of negatives that are called negatives (the *true negative rate (TNR)*)
 * as the proportion of outcomes called positives that are actually positives (called *positive predictive value* or *precision*)
 
 Note that *precision* depends on prevalence, while *TPR* and *TNR* do not. As is common for all medical tests, we define the detection of an orthopedic issue as a positive outcome.
 
-__*F1-score*__ is the harmonic average of specificity (precision) and sensitivity. This one-number summary also allows to weigh sensitivity and specificity, if one type of error is considered more costly than the other
+__*F1-score*__ is the harmonic average of specificity (precision) and sensitivity. This one-number summary also allows to weigh sensitivity and specificity, if one type of error is considered more costly than the other.
 
 __*ROC*__ and __*precision-recall*__ plots: Here, one plots the sensitivity and specificity results of different models into the same plain, to be able to determine whether one approach is generally superior to the other.
 
@@ -119,9 +121,9 @@ __*ROC*__ and __*precision-recall*__ plots: Here, one plots the sensitivity and 
 
 In a first step, we apply the following set of models to the train set:
 
-* __*linear regression*__: With linear regression, we try to predict the outcome, as a linear combination of a set of explanatory variables. Linear regression is a popular approach, as the models results are interpretable. The coefficient of each explanatory variable describes the impact on the outcome. 
+* __*linear regression*__: With linear regression, we try to predict the outcome, as a linear combination of a set of explanatory variables. Linear regression is a popular approach, as the models results are interpretable. The coefficient of each explanatory variable describes its impact on the outcome. 
 
-* __*logistic regression*__: A logistic models the probability of an event by having the log-odds for the event be a linear combination of one or more explanatory variables. In the context of regression analysis, logistic regression is estimating the parameters of a logistic model. In the given example, we have a binary logistic regression, where the dependent variable is binary with values 1 and 0 (see ref[10]). 
+* __*logistic regression*__: Logistic regression models the probability of an event by having the log-odds for the event be a linear combination of one or more explanatory variables. In the context of regression analysis, logistic regression is estimating the parameters of a logistic model. In the given example, we have a binary logistic regression, where the dependent variable is binary with values 1 and 0 (see ref[10]).
 
 * __*regression tree*__: Decision tree learning is a method commonly used in data mining. Regression trees are decision trees in which the target variables can take continuous values instead of class labels in leaves. Regression trees use modified split selection criteria and stopping criteria (see ref[11]).
 
@@ -133,10 +135,9 @@ In a first step, we apply the following set of models to the train set:
 We start with linear regression. But let's first have a look at a correlation plot of all variables from the train set (`Figure 3`):
 
 ```{r fig3,  fig.width= 5.0, fig.height = 3.0, fig.cap = "Correlation Plot", eval = TRUE, echo = FALSE, include = TRUE}
-
-corr <- round(cor(train2_set %>% 
-  select(-c("pat_Id")) %>% 
-  mutate(class = as.numeric(class))), 2)
+corr <- round(cor(train2_set %>%
+                    select(-c("pat_Id")) %>%
+                    mutate(class = as.numeric(class))), 2)
 
 corrplot <- ggcorrplot::ggcorrplot(corr, lab = TRUE, lab_size = 2, tl.cex = 7)
 corrplot
@@ -156,17 +157,18 @@ summary(fit_lm)
 \normalsize
 
 The summary output of the linear regression analysis shows that `degree_spond` and `pelvic_radius` have the most significant impact. This was expected for `degree_spond`, as it serves as a direct indicator of spondylolisthesis. For `pelvic_radius` the reason seems to be that it is not highly correlated with other explanatory variables. All other explanatory variables are significant too, but to a lower degree. The sign for `sacral_slope` is somewhat unexpected, and seems to be negative due to the (positve) correlation with other variables, which are already positively correlated with `class`. 
-We note that the output of the linear regression model can be interpreted as a probability, even though it is not floored with 0 or capped with 0, which is a typical drawback of linear regression (see `figure 4`)
+We note that the output of the linear regression model can be interpreted as a probability, even though it is not floored with 0 or capped with 1, which is a typical drawback of linear regression (see `figure 4`)
 
 ```{r fig4,  fig.width= 4.0, fig.height = 2.5, fig.cap = "Probability Prediction with Linear Regression", echo = FALSE, include = TRUE}
-  p_hat_lm %>% hist(main = NULL) # not bound by 0 and 1.0
+p_hat_lm %>% hist(main = NULL) # not bound by 0 and 1.0
 ```
 
 When using the probability outcome to predict the status of the patient, with a probability exceeding 50% indicating the status "Abnormal", we receive the following result for the linear regression model (`Table 1`):
 \FloatBarrier
 ```{r tbl1}
-kable(model_results[1:1,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(1, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:1, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(1, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
@@ -180,14 +182,14 @@ The abbreviations stand for:
 * __TP__ ... number of true positives
 * __TN__ ... number of true negatives
 
-The linear regression model scores with high sensitivity, which is somewhat surprising for me as I expected linear regression failing to predict positive cases that can be found as outliers on the opposite side of the main trend for "abnormal" cases (See `Figure 2`). On the other hand, linear regression does not well regarding specificity, however, especially when looking at the `true negative rate (TNR)`, which is independent of prevalence.
+The linear regression model scores with high sensitivity, which was somewhat surprising for me as I expected linear regression failing to predict positive cases that can be found as outliers on the opposite side of the main trend for "abnormal" cases (See `Figure 2`). On the other hand, linear regression does not do well regarding specificity, especially when looking at the `true negative rate (TNR)`, which is independent of prevalence.
 
 ## Logistic Regression
 
-For the (binary) logistic regression model, the option `family = "binomial"`is added to the `glm()`function. With logistic regression, the output is an estimate of probability and bound by 0 and 1.
+For the (binary) logistic regression model, the option `family = "binomial"` is added to the `glm()`function. With logistic regression, the output is an estimate of probability and bound by 0 and 1.
 
 ```{r fig5,  fig.width= 4.0, fig.height = 2.5, fig.cap = "Probability Prediction with Logistic Regression", echo = FALSE, include = TRUE}
-  p_hat_glm %>% hist(main = NULL) #  bound by 0 and 1.0
+p_hat_glm %>% hist(main = NULL) #  bound by 0 and 1.0
 ```
 
 The summary output of the model shows that logistic regression results in a somewhat different perception about the direction and importance of explanatory variables, compared with plain linear regression. For example, `lumbar_lordosis` has a different sign and is not considered to be significant any more
@@ -202,8 +204,9 @@ summary(fit_glm)
 
 \FloatBarrier
 ```{r tbl2}
-kable(model_results[1:2,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(2, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:2, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(2, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 ## Regression Tree
@@ -211,8 +214,9 @@ kable(model_results[1:2,], digits = 3, caption = "Model Results") %>%
 The regression tree algorithm (denoted as `rpart`) is the third model we apply. Let's go straight to the results (see `Table 3`):
 \FloatBarrier
 ```{r tbl3}
-kable(model_results[1:3,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(3, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:3, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(3, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 The regression tree algorithm does worse than the regression approaches, regarding both accuracy and F1 score. `Figure 6`shows the selection process of the regression tree algorithm. 
@@ -225,17 +229,18 @@ rpart.plot(fit_rpart, extra = 104) # depict regression tree
 The regression tree approach gives different importance to explanatory variables, when comparing with regression approaches (See `Figure 7`):
  
 ```{r fig7, fig.cap = "Variable Importance with Regression Tree Approach", fig.width=4.0, fig.height = 2.5}
-  data.frame(imp = fit_rpart$variable.importance) %>% 
-    tibble::rownames_to_column() %>% 
-    dplyr::rename("variable" = rowname) %>% 
-    dplyr::arrange(imp) %>%
-    dplyr::mutate(variable = forcats::fct_inorder(variable)) %>% 
-    ggplot() +
-    geom_col(aes(x = variable, y = imp),
-             col = "grey", show.legend = F) +
-    coord_flip() +
-    scale_fill_grey() +
-    theme_bw()
+data.frame(imp = fit_rpart$variable.importance) %>%
+  tibble::rownames_to_column() %>%
+  dplyr::rename("variable" = rowname) %>%
+  dplyr::arrange(imp) %>%
+  dplyr::mutate(variable = forcats::fct_inorder(variable)) %>%
+  ggplot() +
+  geom_col(aes(x = variable, y = imp),
+    col = "grey", show.legend = FALSE
+  ) +
+  coord_flip() +
+  scale_fill_grey() +
+  theme_bw()
 ```
 
 ## Local Weighted Regression (loess)
@@ -243,22 +248,23 @@ The regression tree approach gives different importance to explanatory variables
 In the next step, we will apply the *loess* algorithm, hoping to improve on the previoius regression results by better managing to capture non-linear relationships. It has to be noted that the *loess* approach issues warnings ( *... k-d tree limited by memory ... *) and that the `finalModel` received after using the `carret::train()`function for cross-validation cannot be fitted to the whole train set using the `loess()` function, as it gives an error saying that *... only 1-4 predictors are allowed ...* for the `loess()` function. The model applied is therefore the `finalModel` received via the cross validation and not fitted to the whole train set. `Table 4` shows the result, which is somewhat in between the results of the linear regression and the logistic regression.
 \FloatBarrier
 ```{r tbl4}
-kable(model_results[1:4,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(4, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:4, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(4, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
 ## k-nearest neighbours / knn
 
-The k-nearest neighbor algorithm is a non-parametric approach which I hope will do well with the data given. Unfortunately, the results of the approach of applying the knn-algorithm to the variables as they are (this approach will be denoted as `knn`), are  not spectacular (All knn-results will be showed in a final table, `Table 5`, to reduce the number of tables, as it is very difficult to get a proper format with many tables when knitting to pdf).
+The k-nearest neighbor algorithm is a non-parametric approach which I hoped would do well with the data at hand, given that outliers seemed to be indicative of positive cases independent of direction. Unfortunately, the results of the approach of applying the knn-algorithm to the variables as they are (this approach will be denoted as `knn`), are  not spectacular (All knn-results will be showed in a final table, `Table 5`, to reduce the number of tables, as it is very difficult to get a proper format with many tables when knitting to pdf).
 
 The k-nearest neighbor model yields the worst results so far, given both accuracy and F1-score. It does well regarding specificity, but fails to recognize a lot of positive cases, which is not what you want from a medical test. 
 
 ## k-nearest neighbours (normalized variables - approach 1) / knn_norm
 
-With the knn-model working with distances, one reason might be that the explanatory variables have differing units (degree, angle, radius). I therefore try to normalize the variables (which is generally recommended for this approach), to turn them into unit-free measures. This means that the respective mean is subtracted from explanatory variable, before dividing it by its standard deviations. The result are a set of explanatory variables that all have a mean of 0 and a standard deviation of 1. The result of this approach, denoted as `knn_norm`, is shown in `Table 5`.
+With the knn-model working with distances, one reason might be that the explanatory variables have differing units (degree, angle, radius). I therefore normalized the variables (which is generally recommended for this approach), to turn them into unit-free measures. This means that the respective mean is subtracted from each explanatory variable, before dividing it by its respective standard deviations. The result are a set of explanatory variables that all have a mean of 0 and a standard deviation of 1. The result of this approach, denoted as `knn_norm`, is shown in `Table 5`.
 
-The result is quite disappointing. The `knn_norm` yields the worst result of all approaches so far. One issue might be that that normalizing all variables results in the relation $PI = PT + SS$ not to hold anymore. We therefore try another approach, which makes the variables unit free, while maintaining the mentioned linear relationship. 
+The result is quite disappointing. The `knn_norm` yields the worst result of all approaches so far. One issue might be that  normalizing all variables results in the relation $PI = PT + SS$ not to hold anymore. I therefore tried another approach, which makes the variables unit free, while maintaining the mentioned linear relationship. 
 
 ## k-nearest neighbours (normalized variables - approach 2) / knn_norm2
 
@@ -270,12 +276,13 @@ and
 
 $SS_{adj} = PI_{norm} * \frac{SS}{PT + SS}$
 
-This way, the numbers used to measure `pelvic_tilt` and `sacral_slope` maintain their relation, i.e. how much they contribute to `pelvic_incidence` and the linear relationship between these three variables remains, with `pelvic_incidence` being a normalized variable. The result of this approach, denoted as `knn_norm2`, are also displayed in `Table 5`.
+This way, the numbers used to measure `pelvic_tilt` and `sacral_slope` maintain their relation, i.e. how much they contribute to `pelvic_incidence` and the linear relationship between these three variables remains, with `pelvic_incidence` being a normalized variable. The result of this approach, denoted as `knn_norm2`, is also displayed in `Table 5`.
 
 \FloatBarrier
 ```{r tbl5}
-kable(model_results[1:7,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(5:7, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:7, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(5:7, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
@@ -286,10 +293,15 @@ The `knn_norm2` approach does best among all k-nearest neighbor approaches.
 Let's now compare the output of all models using *receiver operating characteristic (ROC)* plot and a *precision-recall* plot. 
 
 ```{r fig8, fig.cap = "Model comparison with ROC / precision-recall", fig.height = 5.5}
-grid.arrange(model_results[1:7,] %>% ggplot(aes(x = 1 - TNR, y = sensitivity, color = model_id)) +
-  geom_point(size = 5, shape = 7) ,
-  model_results[1:7,] %>% ggplot(aes(x = 1 - precision, y = sensitivity, color = model_id)) +
-  geom_point(size = 5, shape = 7), nrow = 2)
+grid.arrange(
+  model_results[1:7, ] %>%
+    ggplot(aes(x = 1 - TNR, y = sensitivity, color = model_id)) +
+    geom_point(size = 5, shape = 7),
+  model_results[1:7, ] %>%
+    ggplot(aes(x = 1 - precision, y = sensitivity, color = model_id)) +
+    geom_point(size = 5, shape = 7),
+  nrow = 2
+)
 ```
 
 
@@ -301,48 +313,71 @@ For the combination approach, we will first generate a combined probability of a
 
 \FloatBarrier
 ```{r tbl6}
-kable(model_results[1:9,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(8:9, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:9, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(8:9, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
-Interestingly, both approaches yield the similar results and equal accuracy, but looking at the details, one can see that their predictions differ slightly regarding sensitivity and specificity, and also with their predictions for individual patients. In any case, the combination models do yield one of the better results with a good balance between sensistivity and specificity, but not a result clearly superior to all other, single-model approaches (See `Figure 9`). 
+Interestingly, both approaches yield similar results and equal accuracy, but looking at the details, one can see that their predictions differ slightly regarding sensitivity and specificity, and also regarding their predictions for individual patients. In any case, the combination models do yield one of the better results with a good balance between sensitivity and specificity, but not a result that is clearly superior to all other, single-model approaches (See `Figure 9`). 
 
 ```{r fig9, fig.cap = "Model comparison with ROC / precision-recall", fig.height = 6.0}
- grid.arrange(
- model_results[1:9, ] %>% bind_cols(grp =c(rep("binary output - single model", 7), 
-                                    rep("binary output - comb model", 2))) %>% 
-   ggplot() +
-   geom_point(aes(
-     x = 1 - TNR,
-     y = sensitivity,
-     color = model_id,
-     shape = grp
-   ), size = 6) + scale_shape_manual(values = c("binary output - single model" = 7,
-                                                "binary output - comb model" = 15,
-                                                "3cat output - single model" = 10, 
-                                                "3cat output - comb model" = 16)) +
-   guides(size = FALSE) +
-   theme(legend.direction = "vertical",
-         legend.text = element_text(size = 5),
-         legend.key.size = unit(0.3, 'cm')),
- model_results[1:9, ] %>% bind_cols(grp =c(rep("binary output - single model", 7), 
-                                           rep("binary output - comb model", 2))) %>% 
-   ggplot() +
-   geom_point(aes(
-     x = 1 - precision,
-     y = sensitivity,
-     color = model_id,
-     shape = grp
-   ), size = 6) + scale_shape_manual(values = c("binary output - single model" = 7,
-                                                "binary output - comb model" = 15,
-                                                "3cat output - single model" = 10, 
-                                                "3cat output - comb model" = 16)) +
-   guides(size = FALSE) +
-   theme(legend.direction = "vertical",
-         legend.text = element_text(size = 5),
-         legend.key.size = unit(0.3, 'cm')),
- nrow = 2)
+grid.arrange(
+  model_results[1:9, ] %>%
+    bind_cols(grp = c(
+      rep("binary output - single model", 7),
+      rep("binary output - comb model", 2)
+    )) %>%
+    ggplot() +
+    geom_point(
+      aes(
+        x = 1 - TNR,
+        y = sensitivity,
+        color = model_id,
+        shape = grp
+      ),
+      size = 6
+    ) +
+    scale_shape_manual(values = c(
+      "binary output - single model" = 7,
+      "binary output - comb model" = 15,
+      "3cat output - single model" = 10,
+      "3cat output - comb model" = 16
+    )) +
+    guides(size = FALSE) +
+    theme(
+      legend.direction = "vertical",
+      legend.text = element_text(size = 5),
+      legend.key.size = unit(0.3, "cm")
+    ),
+  model_results[1:9, ] %>%
+    bind_cols(grp = c(
+      rep("binary output - single model", 7),
+      rep("binary output - comb model", 2)
+    )) %>%
+    ggplot() +
+    geom_point(aes(
+      x = 1 - precision,
+      y = sensitivity,
+      color = model_id,
+      shape = grp
+    ), size = 6) +
+    scale_shape_manual(
+      values = c(
+        "binary output - single model" = 7,
+        "binary output - comb model" = 15,
+        "3cat output - single model" = 10,
+        "3cat output - comb model" = 16
+      )
+    ) +
+    guides(size = FALSE) +
+    theme(
+      legend.direction = "vertical",
+      legend.text = element_text(size = 5),
+      legend.key.size = unit(0.3, "cm")
+    ),
+  nrow = 2
+)
 ```
 
 # Models (Part 2 - categorical outcome / 3-cat)
@@ -350,12 +385,12 @@ Interestingly, both approaches yield the similar results and equal accuracy, but
 We will now turn to the second data set, which is identical except for the outcome, which is a categorical variable that classifies patients as "Normal", (disk) "Hernia" or "Spondylolisthesis". While using the binary outcome had the advantage of being able to use more models, using the categorical outcome seems to be promising, since "Hernia" and "Spondylolisthesis" seem to be indicated by different values of the explanatory variables (See `Figure 10`). We are using the normalized data set to be better able to see the properties with the same scaling for all variables. 
 
 ```{r fig10, fig.height = 6.0, fig.cap = "Explanatory Variables vs. Patient Status Categorical (shortened y-axis)"}
- train3_set_long %>%
-   ggplot(aes(x = class, y = value)) +
-   geom_boxplot() +
-   coord_cartesian(ylim = c(-20.0, 160)) +
-   facet_wrap(~ name) +
-   theme(axis.text.x = element_text(angle = 90))
+train3_set_long %>%
+  ggplot(aes(x = class, y = value)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(-20.0, 160)) +
+  facet_wrap(~name) +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 With the output being categorical, we will only apply the *regression tree* and the *knn* approaches.
@@ -369,8 +404,9 @@ Since evaluation metrics like *sensitivity* are defined for classes when the out
 
 \FloatBarrier
 ```{r tbl9}
-kable(model_results[1:10,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(10, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:10, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(10, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
@@ -378,26 +414,34 @@ This approach immediately gives promising results, delivering the best value for
 
 \FloatBarrier
 ```{r fig11, fig.height = 2.5, fig.width = 2.5, fig.cap = "Confusion Matrix for regression tree (3 states)"}
-tgt_vs_pred_abbr <- data.frame(target_class = test3_set$class, predicted_class = y_hat3_rpart) %>% 
-  left_join(class_abbr, by = c("target_class" = "class")) %>% 
-  select(-c("target_class")) %>% rename(target_class = class_abbr) %>% 
-  left_join(class_abbr, by = c("predicted_class" = "class")) %>% 
-  select(-c("predicted_class")) %>% rename(predicted_class = class_abbr)
+tgt_vs_pred_abbr <-
+  data.frame(target_class = test3_set$class, predicted_class = y_hat3_rpart) %>%
+  left_join(class_abbr, by = c("target_class" = "class")) %>%
+  select(-c("target_class")) %>%
+  rename(target_class = class_abbr) %>%
+  left_join(class_abbr, by = c("predicted_class" = "class")) %>%
+  select(-c("predicted_class")) %>%
+  rename(predicted_class = class_abbr)
 
-cvms_cm <- confusion_matrix(targets = tgt_vs_pred_abbr$target_class, predictions = tgt_vs_pred_abbr$predicted_class)
+cvms_cm <- confusion_matrix(
+  targets = tgt_vs_pred_abbr$target_class,
+  predictions = tgt_vs_pred_abbr$predicted_class
+)
 
-plot_confusion_matrix(cvms_cm$`Confusion Matrix`[[1]], 
-                      font_counts = font(
-                        size = 6),
-                      add_normalized = FALSE,
-                      add_sums = TRUE,
-                      sums_settings = sum_tile_settings(
-                        label = "Total",
-                        tc_tile_border_color = "black"
-                      ),
-                      add_col_percentages = FALSE,
-                      add_row_percentages = FALSE,
-                      rm_zero_text = FALSE)
+plot_confusion_matrix(cvms_cm$`Confusion Matrix`[[1]],
+  font_counts = font(
+    size = 6
+  ),
+  add_normalized = FALSE,
+  add_sums = TRUE,
+  sums_settings = sum_tile_settings(
+    label = "Total",
+    tc_tile_border_color = "black"
+  ),
+  add_col_percentages = FALSE,
+  add_row_percentages = FALSE,
+  rm_zero_text = FALSE
+)
 ```
 \FloatBarrier
 
@@ -414,7 +458,9 @@ Finally, let's look at the evaluation metrics for each class (`Table 10`). We ca
 
 ````{r tbl10}
 kable(cm_3rpart$byClass[, c("Sensitivity", "Specificity", "F1", "Balanced Accuracy")],
-      digits = 3, caption = "Regression Tree, Evaluation Metrics by Class")
+  digits = 3,
+  caption = "Regression Tree, Evaluation Metrics by Class"
+)
 ```
 \FloatBarrier
 
@@ -430,35 +476,45 @@ We will show the results all at once in `Table 12`:
 
 \FloatBarrier
 ```{r tbl12}
-kable(model_results[1:13,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(11:13, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:13, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(11:13, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
-All three knn-approaches do much better regarding specificity than regarding sensitivity, having a high number of false negatives. Again, `knn_norm2_cat` comes out best, having the lowest number of false positives so far. `Figure 13` shows the confusion matrix for this approach. Here (and also in `Table 13`) we see that the best knn does not a good job of identifying cases of hernia correctly, making up the largest amount of false negatives.
+All three knn-approaches do much better regarding specificity than regarding sensitivity, having a high number of false negatives. Again, `knn_norm2_cat` is superior to the two other knn approaches, and also has the lowest number of false positives so far. `Figure 13` shows the confusion matrix for this approach. Here (and also in `Table 13`) we see that the best knn approach does not do a good job of identifying cases of hernia correctly, making up the largest amount of false negatives.
 
 
 ```{r fig13,  fig.width= 2.5, fig.height = 2.5, fig.cap= "Confusion Matrix", echo = FALSE, include = TRUE}
-tgt_vs_pred_abbr <- data.frame(target_class = test3_set$class, predicted_class = y_hat3_knn_norm2) %>% 
-  left_join(class_abbr, by = c("target_class" = "class")) %>% 
-  select(-c("target_class")) %>% rename(target_class = class_abbr) %>% 
-  left_join(class_abbr, by = c("predicted_class" = "class")) %>% 
-  select(-c("predicted_class")) %>% rename(predicted_class = class_abbr)
+tgt_vs_pred_abbr <-
+  data.frame(
+             target_class = test3_set$class,
+             predicted_class = y_hat3_knn_norm2) %>%
+  left_join(class_abbr, by = c("target_class" = "class")) %>%
+  select(-c("target_class")) %>%
+  rename(target_class = class_abbr) %>%
+  left_join(class_abbr, by = c("predicted_class" = "class")) %>%
+  select(-c("predicted_class")) %>%
+  rename(predicted_class = class_abbr)
 
-cvms_cm <- confusion_matrix(targets = tgt_vs_pred_abbr$target_class, predictions = tgt_vs_pred_abbr$predicted_class)
+cvms_cm <- confusion_matrix(
+                            targets = tgt_vs_pred_abbr$target_class,
+                            predictions = tgt_vs_pred_abbr$predicted_class)
 
-plot_confusion_matrix(cvms_cm$`Confusion Matrix`[[1]], 
-                      font_counts = font(
-                        size = 6),
-                      add_normalized = FALSE,
-                      add_sums = TRUE,
-                      sums_settings = sum_tile_settings(
-                        label = "Total",
-                        tc_tile_border_color = "black"
-                      ),
-                      add_col_percentages = FALSE,
-                      add_row_percentages = FALSE,
-                      rm_zero_text = FALSE) +
+plot_confusion_matrix(cvms_cm$`Confusion Matrix`[[1]],
+  font_counts = font(
+    size = 6
+  ),
+  add_normalized = FALSE,
+  add_sums = TRUE,
+  sums_settings = sum_tile_settings(
+    label = "Total",
+    tc_tile_border_color = "black"
+  ),
+  add_col_percentages = FALSE,
+  add_row_percentages = FALSE,
+  rm_zero_text = FALSE
+) +
   ggtitle("confusion matrix, knn_norm2_cat") +
   theme(plot.title = element_text(size = 7, face = "bold"))
 ```
@@ -467,7 +523,8 @@ plot_confusion_matrix(cvms_cm$`Confusion Matrix`[[1]],
 \FloatBarrier
 ````{r tbl13}
 kable(cm_3rpart$byClass[, c("Sensitivity", "Specificity", "F1", "Balanced Accuracy")],
-      digits = 3, caption = "knn normalized ver2, Evaluation Metrics by Class")
+  digits = 3, caption = "knn normalized ver2, Evaluation Metrics by Class"
+)
 ```
 \FloatBarrier
 
@@ -477,8 +534,9 @@ Now we have two models at hand, that show very good results regarding sensitivit
 
 \FloatBarrier
 ```{r tbl14}
-kable(model_results[1:15,], digits = 3, caption = "Model Results") %>% 
-  kable_styling() %>% row_spec(14:15, bold = TRUE, hline_after = TRUE)
+kable(model_results[1:15, ], digits = 3, caption = "Model Results") %>%
+  kable_styling() %>%
+  row_spec(14:15, bold = TRUE, hline_after = TRUE)
 ```
 \FloatBarrier
 
@@ -488,50 +546,69 @@ As a final model, we might either choose `p_comb1_cat`, which takes the weighted
 Compared to the stand-alone result of `rpart_cat`, which was the model with the highest sensitivity so far, both combination approaches are able to reduce the number of false positives by 4 while maintaining the level of false negatives. Both combination approaches represent our best models regarding *accuracy*, *sensitivity*, *F1-score* and *F1-score weighted for sensitivity*. There are no differences between both models when looking at both models confusion matrices overall (See `Figure 14`), but false positives are not all the same patients for both models.
 
 ```{r fig14, fig.width = 5.0, fig.height=5.0, fig.cap = "Confusion MatriX", echo = FALSE, include = TRUE}
-  tgt_vs_pred_abbr1 <- data.frame(target_class = test3_set$class, predicted_class = y_hat3_comb1) %>% 
-   left_join(class_abbr, by = c("target_class" = "class")) %>% 
-   select(-c("target_class")) %>% rename(target_class = class_abbr) %>% 
-   left_join(class_abbr, by = c("predicted_class" = "class")) %>% 
-   select(-c("predicted_class")) %>% rename(predicted_class = class_abbr)
- 
- cvms_cm1 <- confusion_matrix(targets = tgt_vs_pred_abbr1$target_class, predictions = tgt_vs_pred_abbr$predicted_class)
- 
- tgt_vs_pred_abbr2 <- data.frame(target_class = test3_set$class, predicted_class = y_hat3_comb2) %>% 
-   left_join(class_abbr, by = c("target_class" = "class")) %>% 
-   select(-c("target_class")) %>% rename(target_class = class_abbr) %>% 
-   left_join(class_abbr, by = c("predicted_class" = "class")) %>% 
-   select(-c("predicted_class")) %>% rename(predicted_class = class_abbr)
- 
- cvms_cm2 <- confusion_matrix(targets = tgt_vs_pred_abbr2$target_class, predictions = tgt_vs_pred_abbr$predicted_class)
- 
- grid.arrange(
- plot_confusion_matrix(cvms_cm1$`Confusion Matrix`[[1]], 
-                       font_counts = font(
-                         size = 6),
-                       add_normalized = FALSE,
-                       add_col_percentages = FALSE,
-                       add_row_percentages = FALSE,
-                       rm_zero_text = FALSE,
-                       add_sums = TRUE,
-                       sums_settings = sum_tile_settings(
-                         label = "Total",
-                         tc_tile_border_color = "black"
-                       )) + ggtitle("P-Comb rpart3 + knn") +
-   theme(plot.title = element_text(size = 7, face = "bold")),
- plot_confusion_matrix(cvms_cm2$`Confusion Matrix`[[1]], 
-                       font_counts = font(
-                         size = 6),
-                       add_normalized = FALSE,
-                       add_col_percentages = FALSE,
-                       add_row_percentages = FALSE,
-                       rm_zero_text = FALSE,
-                       add_sums = TRUE,
-                       sums_settings = sum_tile_settings(
-                         label = "Total",
-                         tc_tile_border_color = "black"
-                       ))  + ggtitle("P-Comb rpart3 + knn_norm2") +
-   theme(plot.title = element_text(size = 7, face = "bold")),
- ncol = 2)
+tgt_vs_pred_abbr1 <-
+  data.frame(
+             target_class = test3_set$class,
+             predicted_class = y_hat3_comb1) %>%
+  left_join(class_abbr, by = c("target_class" = "class")) %>%
+  select(-c("target_class")) %>%
+  rename(target_class = class_abbr) %>%
+  left_join(class_abbr, by = c("predicted_class" = "class")) %>%
+  select(-c("predicted_class")) %>%
+  rename(predicted_class = class_abbr)
+
+cvms_cm1 <- confusion_matrix(
+                             targets = tgt_vs_pred_abbr1$target_class,
+                             predictions = tgt_vs_pred_abbr$predicted_class)
+
+tgt_vs_pred_abbr2 <-
+  data.frame(
+             target_class = test3_set$class,
+             predicted_class = y_hat3_comb2) %>%
+  left_join(class_abbr, by = c("target_class" = "class")) %>%
+  select(-c("target_class")) %>%
+  rename(target_class = class_abbr) %>%
+  left_join(class_abbr, by = c("predicted_class" = "class")) %>%
+  select(-c("predicted_class")) %>%
+  rename(predicted_class = class_abbr)
+
+cvms_cm2 <- confusion_matrix(
+                             targets = tgt_vs_pred_abbr2$target_class,
+                             predictions = tgt_vs_pred_abbr$predicted_class)
+
+grid.arrange(
+  plot_confusion_matrix(cvms_cm1$`Confusion Matrix`[[1]],
+    font_counts = font(
+      size = 6
+    ),
+    add_normalized = FALSE,
+    add_col_percentages = FALSE,
+    add_row_percentages = FALSE,
+    rm_zero_text = FALSE,
+    add_sums = TRUE,
+    sums_settings = sum_tile_settings(
+      label = "Total",
+      tc_tile_border_color = "black"
+    )
+  ) + ggtitle("P-Comb rpart3 + knn") +
+    theme(plot.title = element_text(size = 7, face = "bold")),
+  plot_confusion_matrix(cvms_cm2$`Confusion Matrix`[[1]],
+    font_counts = font(
+      size = 6
+    ),
+    add_normalized = FALSE,
+    add_col_percentages = FALSE,
+    add_row_percentages = FALSE,
+    rm_zero_text = FALSE,
+    add_sums = TRUE,
+    sums_settings = sum_tile_settings(
+      label = "Total",
+      tc_tile_border_color = "black"
+    )
+  ) + ggtitle("P-Comb rpart3 + knn_norm2") +
+    theme(plot.title = element_text(size = 7, face = "bold")),
+  ncol = 2
+)
 ```
 
 \FloatBarrier
@@ -541,31 +618,40 @@ Compared to the stand-alone result of `rpart_cat`, which was the model with the 
 
 ````{r tbl15}
 kable(cm_3comb1$byClass[, c("Sensitivity", "Specificity", "F1", "Balanced Accuracy")],
-      digits = 3, caption = "combination model 3-cat, Evaluation Metrics by Class")
+  digits = 3, caption = "combination model 3-cat, Evaluation Metrics by Class"
+)
 ```
 \FloatBarrier
 
 `Figure 15` shows that we managed to find two final models that are superior to many others.
 
 ```{r fig15, fig.cap = "Model comparison with ROC / precision-recall", fig.height = 5.0}
-model_results %>% bind_cols(grp =c(rep("binary output - single model", 7), 
-                                   rep("binary output - comb model", 2), 
-                                   rep("3cat output - single model", 4), 
-                                   rep("3cat output - comb model", 2))) %>% 
+model_results %>%
+  bind_cols(grp = c(
+    rep("binary output - single model", 7),
+    rep("binary output - comb model", 2),
+    rep("3cat output - single model", 4),
+    rep("3cat output - comb model", 2)
+  )) %>%
   ggplot() +
   geom_point(aes(
     x = 1 - TNR,
     y = sensitivity,
     color = model_id,
     shape = grp
-  ), size = 6) + scale_shape_manual(values = c("binary output - single model" = 7,
-                                     "binary output - comb model" = 15,
-                                     "3cat output - single model" = 10, 
-                                     "3cat output - comb model" = 16)) +
+  ), size = 6) +
+  scale_shape_manual(values = c(
+    "binary output - single model" = 7,
+    "binary output - comb model" = 15,
+    "3cat output - single model" = 10,
+    "3cat output - comb model" = 16
+  )) +
   guides(size = FALSE) +
-  theme(legend.direction = "vertical",
-         legend.text = element_text(size = 6),
-         legend.key.size = unit(0.4, 'cm'))
+  theme(
+    legend.direction = "vertical",
+    legend.text = element_text(size = 6),
+    legend.key.size = unit(0.4, "cm")
+  )
 ```
 
 ## missed observations
@@ -577,25 +663,30 @@ Lastly, let's last have a look at how many observations where false negatives or
 
 
 ```{r fig16, fig.cap = "Observations missed by all aglorithms", fig.height = 6.0}
- train3_set_long %>% ggplot(aes(x = class, y = value)) +
-   geom_boxplot() +
-   geom_point(data = test3_set_long %>% filter(pat_Id %in% FP_all_models),
-              aes(color = factor(pat_Id)), shape = 18, size = 3.0) +
-   geom_point(data = test3_set_long %>% filter(pat_Id %in% FN_all_models),
-              aes(color = factor(pat_Id)), shape = 18, size = 3.0) +
-   facet_wrap(~name) +
-   theme(axis.text.x = element_text(angle = 90))
+train3_set_long %>% ggplot(aes(x = class, y = value)) +
+  geom_boxplot() +
+  geom_point(
+    data = test3_set_long %>% filter(pat_Id %in% FP_all_models),
+    aes(color = factor(pat_Id)), shape = 18, size = 3.0
+  ) +
+  geom_point(
+    data = test3_set_long %>% filter(pat_Id %in% FN_all_models),
+    aes(color = factor(pat_Id)), shape = 18, size = 3.0
+  ) +
+  coord_cartesian(ylim = c(-20.0, 160)) +
+  facet_wrap(~name) +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 # Final Conclusion and Thoughts
 
-We could show that working with categorical output, trying to predict the orthopedic issue (hernia or spondylolisthesis) worked better than working with a binary outcome, where on is just trying to predict the existence of an orthopedic issue in general. Even though the latter approach allows for a wider range of models, the categorical approach is more successful, since the different categories of orthopedic issues seem to have a different impact on posture, and therefore, the values of explanatory variables used. 
+We could show that working with categorical output, trying to predict the orthopedic issue (hernia or spondylolisthesis) worked better than working with a binary outcome, where one is just trying to predict the existence of an orthopedic issue in general. Even though the latter approach allows for a wider range of models, the categorical approach is more successful, since the different categories of orthopedic issues seem to have a different impact on posture, and therefore, the values of explanatory variables used. 
 
 We could also see from `Figure 16`, that there will always be a small number of false positives, i.e. patients with a peculiar posture that is don't have an orthopedic issue. There is also one patient with hernia that has no striking orthopedic features at all. This might be a case of a disk hernia without pain involved, with the bulge not pressing against sensitive tissue or nerves. All patients with spondylolisthesis, on the other hand, are correctly identified by the final two algorithms.
 
 It has to be noted, that the data set used is relatively small with only `r nrow(train2_set)` observations in the train set and `r nrow(test2_set)` observation in the test set. Results have to be therefore taken with caution. 
 
-Future work might try other algorithms, like random forests, and other combinations of algorithms to achieve better results. While the final models get in total `r length(FN_3comb1) + length(FP_3comb1)` wrong, only `r length(FN_all_models) + length(FP_all_models)` observations are missed by all algorithms (see `Figure 16`), so there might be room for improvement.
+Future work might try other algorithms, like random forests, and other combinations of algorithms to achieve better results. While the final models get in total `r length(FN_3comb1) + length(FP_3comb1)` patients wrong, only `r length(FN_all_models) + length(FP_all_models)` observations are missed by all algorithms (see `Figure 16`), so there should be room for improvement.
 
 
 
@@ -624,4 +715,3 @@ Future work might try other algorithms, like random forests, and other combinati
 [11] https://www.ibm.com/docs/en/db2-warehouse?topic=procedures-regression-trees
 
 [12] https://www.jstor.org/stable/2289282
-

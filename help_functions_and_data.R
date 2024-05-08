@@ -1,5 +1,5 @@
 # -------------------- PURPOSE --------------------
-# providing help functions and data for the main R-script 
+# providing help functions and data for the main R-script
 # (orthopedic_patients.R).
 
 # -------------------- help functions / objects --------------------
@@ -25,12 +25,18 @@ f_save_model_results <- function(model_name, test_set, y_hat, beta_F = 1) {
     model_results,
     tibble(
       model_id = model_name,
-      accuracy = confusionMatrix(y_hat, test_set$class)$overall[["Accuracy"]],
-      sensitivity = confusionMatrix(y_hat, test_set$class)$byClass[["Sensitivity"]],
-      TNR = confusionMatrix(y_hat, test_set$class)$byClass[["Specificity"]],
-      precision = confusionMatrix(y_hat, test_set$class)$byClass[["Pos Pred Value"]],
-      F1 = confusionMatrix(y_hat, test_set$class)$byClass[["F1"]],
-      F1_wtd = F_meas(data = y_hat, reference = factor(test_set$class), beta = beta_F),
+      accuracy =
+        confusionMatrix(y_hat, test_set$class)$overall[["Accuracy"]],
+      sensitivity =
+        confusionMatrix(y_hat, test_set$class)$byClass[["Sensitivity"]],
+      TNR =
+        confusionMatrix(y_hat, test_set$class)$byClass[["Specificity"]],
+      precision =
+        confusionMatrix(y_hat, test_set$class)$byClass[["Pos Pred Value"]],
+      F1 =
+        confusionMatrix(y_hat, test_set$class)$byClass[["F1"]],
+      F1_wtd =
+        F_meas(data = y_hat, reference = factor(test_set$class), beta = beta_F),
       FP = confusionMatrix(y_hat, test_set$class)$table[1, 2],
       FN = confusionMatrix(y_hat, test_set$class)$table[2, 1],
       TP = confusionMatrix(y_hat, test_set$class)$table[1, 1],
@@ -38,8 +44,6 @@ f_save_model_results <- function(model_name, test_set, y_hat, beta_F = 1) {
     )
   )
 }
-
-# -------------------- data --------------------
 
 # Mapping table (abbreviations)
 class_abbr <- tribble(
@@ -50,8 +54,7 @@ class_abbr <- tribble(
   "Spondylolisthesis", "Spond"
 )
 
-
-
+# -------------------- data --------------------
 
 ## ---- prepare_data ----
 
@@ -62,13 +65,16 @@ rel_path_data <- file.path("data")
 
 # data files
 file_name_bin_data <- "column_2C_weka.csv" # binary outcome
-file_name_3state_data <- "column_3C_weka.csv" # categorical outcome with 3 states/values
+file_name_3state_data <- "column_3C_weka.csv" # categorical outcome (3 states)
 
 # read/import data
 
 if (file.exists(file.path(getwd(), rel_path_data, "column_2C_weka.csv"))) {
   # data with binary (2 categorical values) output
-  two_cat_pat <- read.csv(file.path(getwd(), rel_path_data, file_name_bin_data)) %>%
+  two_cat_pat <- read.csv(
+                          file.path(getwd(),
+                                    rel_path_data,
+                                    file_name_bin_data)) %>%
     mutate(
       pat_Id = row_number(),
       class = factor(class, levels = c("Abnormal", "Normal"))
@@ -407,10 +413,14 @@ if (file.exists(file.path(getwd(), rel_path_data, "column_2C_weka.csv"))) {
 
 if (file.exists(file.path(getwd(), rel_path_data, "column_3C_weka.csv"))) {
   # data with categorical (3 categorical values) output
-  three_cat_pat <- read.csv(file.path(getwd(), rel_path_data, file_name_3state_data)) %>%
+  three_cat_pat <- read.csv(
+                            file.path(getwd(),
+                                      rel_path_data,
+                                      file_name_3state_data)) %>%
     mutate(
       pat_Id = row_number(),
-      class = factor(class, levels = c("Hernia", "Spondylolisthesis", "Normal"))
+      class =
+        factor(class, levels = c("Hernia", "Spondylolisthesis", "Normal"))
     ) %>%
     rename(
       degree_spond = degree_spondylolisthesis,
@@ -429,4 +439,3 @@ if (file.exists(file.path(getwd(), rel_path_data, "column_3C_weka.csv"))) {
     select(-c("class")) %>%
     rename(class = class_cat)
 }
-
