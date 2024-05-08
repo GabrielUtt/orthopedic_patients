@@ -3,12 +3,7 @@ title: "Orthopedic Patients - Data Science Project"
 author: "Markus Mair"
 date: "2023-11-10"
 output:
-  rmarkdown::pdf_document:
-    fig_caption: yes
-    includes:
-        in_header: my_header.tex
-header-includes:
-  \usepackage{placeins}
+  bookdown::html_document2
 ---
 
 # Project Overview
@@ -29,9 +24,6 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 knitr::read_chunk(path = file.path(getwd(), "orthopedic_patients_MM.R"))
 
 library(knitr)
-knitr::knit_hooks$set(plot = function(x, options) {
-  paste0(knitr::hook_plot_tex(x, options), "\n\\FloatBarrier\n")
-})
 ```
 
 The markdown file itself does not contain code to run the calculations, but only code to run chunks from the R-script, and code to produce plots and tables. If the data files *column_2C_weka.csv* and *column_3C_weka.csv* are available, they need to be placed in a a subdirectory of the working directory named *data*. To get the data in .csv format, the user has to log in to Kaggle and download these files. Since an automatic download is not possible without user login data, the script *help_functions_and_data.R* also creates the data by itself if the user does not download the data.
@@ -68,7 +60,7 @@ The data set contains the following variables. Since the long names cause proble
 
 ## Data Analysis (binary outcome)
 
-We are first looking at how the values of each explanatory variable differ from each other, when distinguishing between "normal" and "abnormal" status. For this purpose, we use a box plot for each explanatory variable, grouping for `class` (see `Figure 1`):
+We are first looking at how the values of each explanatory variable differ from each other, when distinguishing between "normal" and "abnormal" status. For this purpose, we use a box plot for each explanatory variable, grouping for `class` (see Figure \@ref(fig:fig1) ):
 
 ```{r fig1, fig.width= 5.0, fig.height = 3.0, fig.cap = "Explanatory Variables vs. Patient Status"}
 train2_set_long %>% ggplot(aes(x = class, y = value)) +
@@ -163,10 +155,10 @@ We note that the output of the linear regression model can be interpreted as a p
 p_hat_lm %>% hist(main = NULL) # not bound by 0 and 1.0
 ```
 
-When using the probability outcome to predict the status of the patient, with a probability exceeding 50% indicating the status "Abnormal", we receive the following result for the linear regression model (`Table 1`):
+When using the probability outcome to predict the status of the patient, with a probability exceeding 50% indicating the status "Abnormal", we receive the following result for the linear regression model (`Table 1` \@ref(tab:tbl1)):
 \FloatBarrier
 ```{r tbl1}
-kable(model_results[1:1, ], digits = 3, caption = "Model Results") %>%
+kable(model_results[1:1, ], digits = 3, label = NA, caption = "Model Results") %>%
   kable_styling() %>%
   row_spec(1, bold = TRUE, hline_after = TRUE)
 ```
@@ -202,13 +194,14 @@ summary(fit_glm)
 
 `Table 2` shows a somewhat reversed result when comparing logistic with linear regression. Sensitivity is lower for logistic regression, but specificity is much improved compared to linear regression. Logistic regression has better accuracy and F1_score (when not weighted for sensitivity).
 
-\FloatBarrier
+
 ```{r tbl2}
 kable(model_results[1:2, ], digits = 3, caption = "Model Results") %>%
   kable_styling() %>%
   row_spec(2, bold = TRUE, hline_after = TRUE)
 ```
-\FloatBarrier
+
+
 ## Regression Tree
 
 The regression tree algorithm (denoted as `rpart`) is the third model we apply. Let's go straight to the results (see `Table 3`):
@@ -456,7 +449,7 @@ The regression tree still separates observations indicating *Spondylolisthesis* 
 Finally, let's look at the evaluation metrics for each class (`Table 10`). We can see that, as in the previous two figures, that the algorithm correctly identifies almost all cases of spondylolisthesis, and 4 out of 5 cases of hernia. There is a higher number of false positives, with not even two-thirds of "Normal" cases being classified correctly.
 
 
-````{r tbl10}
+```{r tbl10}
 kable(cm_3rpart$byClass[, c("Sensitivity", "Specificity", "F1", "Balanced Accuracy")],
   digits = 3,
   caption = "Regression Tree, Evaluation Metrics by Class"
@@ -521,7 +514,7 @@ plot_confusion_matrix(cvms_cm$`Confusion Matrix`[[1]],
 
 
 \FloatBarrier
-````{r tbl13}
+```{r tbl13}
 kable(cm_3rpart$byClass[, c("Sensitivity", "Specificity", "F1", "Balanced Accuracy")],
   digits = 3, caption = "knn normalized ver2, Evaluation Metrics by Class"
 )
@@ -616,7 +609,7 @@ grid.arrange(
 
 `Table 15` shows the evaluation metrics for the final models per class.
 
-````{r tbl15}
+```{r tbl15}
 kable(cm_3comb1$byClass[, c("Sensitivity", "Specificity", "F1", "Balanced Accuracy")],
   digits = 3, caption = "combination model 3-cat, Evaluation Metrics by Class"
 )
