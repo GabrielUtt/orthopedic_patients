@@ -559,7 +559,7 @@ tgt_vs_pred_abbr1 <-
 
 cvms_cm1 <- confusion_matrix(
                              targets = tgt_vs_pred_abbr1$target_class,
-                             predictions = tgt_vs_pred_abbr$predicted_class)
+                             predictions = tgt_vs_pred_abbr1$predicted_class)
 
 tgt_vs_pred_abbr2 <-
   data.frame(
@@ -574,7 +574,7 @@ tgt_vs_pred_abbr2 <-
 
 cvms_cm2 <- confusion_matrix(
                              targets = tgt_vs_pred_abbr2$target_class,
-                             predictions = tgt_vs_pred_abbr$predicted_class)
+                             predictions = tgt_vs_pred_abbr2$predicted_class)
 
 grid.arrange(
   plot_confusion_matrix(cvms_cm1$`Confusion Matrix`[[1]],
