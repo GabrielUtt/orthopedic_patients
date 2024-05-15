@@ -29,6 +29,7 @@ library(knitr)
 The markdown file itself does not contain code to run the calculations, but only code to run chunks from the R-script, and code to produce plots and tables. If the data files *column_2C_weka.csv* and *column_3C_weka.csv* are available, they need to be placed in a a subdirectory of the working directory named *data*. To get the data in .csv format, the user has to log in to Kaggle and download these files. Since an automatic download is not possible without user login data, the script *help_functions_and_data.R* also creates the data by itself if the user does not download the data.
 
 In order to prevent the plots from floating freely through the document, which happens when knitting to pdf, I used a separate file (*my_header.tex*) with LateX instruction in the working folder and a corresponding reference in the YAML header. The commands to be written into the .tex file can be found with this [__link__](https://community.rstudio.com/t/cant-control-position-of-tables-and-figures-in-knitted-pdf-document/37364/3).
+(Note: I had to hand in the paper in pdf format. The latest version of RMarkdown file is outputting to html using bookdown - the comments regarding the pdf format apply to an earlier version that can be found via the git history.)
 
 # Data
 
